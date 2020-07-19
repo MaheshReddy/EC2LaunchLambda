@@ -11,8 +11,7 @@ def post_to_discord(message):
     Thanks to Bilka2@ copied from
     https://gist.github.com/Bilka2/5dd2ca2b6e9f3573e0c2defe5d3031b2
     """
-    url =
-    "https://discord.com/api/webhooks/734283497484713985/1HgmuHDxzhtViwsVk5i0IOSbl5vNiFQNIxzjMSlWl3aeaviSlgvTjeUkvB0FCF38lpgT"
+    url = "<Enter your webhooks here"
     
     data = {}
     #for all params, see https://discordapp.com/developers/docs/resources/webhook#execute-webhook
