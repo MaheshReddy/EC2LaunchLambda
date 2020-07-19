@@ -6,13 +6,15 @@ import json
 
 # TODO write fking tests
 
+session = botocore.session.get_session()
+client = session.create_client('ec2', region_name='us-west-2')
+
 def post_to_discord(message):
     """
     Thanks to Bilka2@ copied from
     https://gist.github.com/Bilka2/5dd2ca2b6e9f3573e0c2defe5d3031b2
     """
     url = "<Enter your webhooks here"
-    
     data = {}
     #for all params, see https://discordapp.com/developers/docs/resources/webhook#execute-webhook
     data["content"] = message 
@@ -36,8 +38,6 @@ def post_to_discord(message):
         return "Payload delivered successfully, code {}.".format(result.status_code)
 
 def start_server(event, context):
-    session = botocore.session.get_session()
-    client = session.create_client('ec2', region_name='us-west-2')
     #TODO add checks about current state of instance
     client.start_instances(InstanceIds=['i-068a66b7bc6c1e0f2'])
     server = None
@@ -65,15 +65,28 @@ def start_server(event, context):
         }),
     }
 
+def _loop_till_status(status):
+    while True:
+        count = 0
+        cur_status = client.describe_instances(
+            InstanceIds=['i-068a66b7bc6c1e0f2']
+        ).get('Reservations')[0].get('Instances')[0].get('State').get('Name')
+        if cur_status == status or count == 25:
+            break
+        time.sleep(1)
+        count = count + 1
+
 def stop_server(event, context):
     session = botocore.session.get_session()
-    client = session.create_client('ec2', region_name='us-west-2')
     #TODO add checks about current state of instance
     client.stop_instances(InstanceIds=['i-068a66b7bc6c1e0f2'])
+    _loop_till_status('stopped')
+    message = "stoped instance id: i-068a66b7bc6c1e0f2"
+    discord_out = post_to_discord(message)
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "message": "stoped instance id: i-068a66b7bc6c1e0f2",
+            "message": "message:{} discord:{}".format(message,discord_out),
         }),
     }
 
